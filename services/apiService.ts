@@ -665,6 +665,7 @@ async function* generatePuterStream(
                 model: modelToUse,
                 temperature: Number(settings.temperature),
                 max_tokens: Number(settings.maxOutputTokens),
+                top_p: Number(settings.topP),
                 stream: settings.streamResponse
             });
 
@@ -875,11 +876,11 @@ Generate the character data EXACTLY as specified in the user's request. Do not f
 
     const userContent = previousOutput ? `[CONTINUE GENERATION FROM]: ${previousOutput}` : prompt;
     
-    // Config for generation
+    // Config for generation - Use user's temperature setting, only override maxOutputTokens based on length
     const genSettings = {
         ...settings,
-        maxOutputTokens: length === 'long' ? 8192 : (length === 'medium' ? 4096 : 2048),
-        temperature: 0.7
+        maxOutputTokens: length === 'long' ? 8192 : (length === 'medium' ? 4096 : 2048)
+        // Note: temperature and other parameters are preserved from user settings
     };
 
     if (settings.apiProvider === 'gemini') {
@@ -1037,8 +1038,9 @@ Generate the character data EXACTLY as specified in the user's request. Do not f
 
                 const result = await puter.ai.chat(messages, {
                     model: modelToUse,
-                    temperature: genSettings.temperature,
-                    max_tokens: genSettings.maxOutputTokens,
+                    temperature: Number(genSettings.temperature),
+                    max_tokens: Number(genSettings.maxOutputTokens),
+                    top_p: Number(genSettings.topP),
                     stream: true
                 });
 
